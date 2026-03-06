@@ -32,7 +32,7 @@ public class ExceptionMiddleware
                     await this.HandleExceptionAsync(context, appException.ExceptionCode, httpStatusCode: HttpStatusCode.Unauthorized);
                     return;
                 case ExceptionCode.RequestValidation:
-                    await this.HandleExceptionAsync(context, appException.ExceptionCode, appException.AdditionalInfo);
+                    await this.HandleExceptionAsync(context, appException.ExceptionCode, appException.AdditionalInfo, httpStatusCode: HttpStatusCode.BadRequest);
                     return;
             }
 
