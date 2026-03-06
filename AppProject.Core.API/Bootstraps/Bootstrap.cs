@@ -1,6 +1,7 @@
 using System;
 using System.Globalization;
 using System.Reflection;
+using AppProject.Core.API.Middlewares;
 using Microsoft.AspNetCore.Localization;
 
 namespace AppProject.Core.API.Bootstraps;
@@ -26,6 +27,8 @@ public static class Bootstrap
         {
             app.MapOpenApi();
         }
+
+        app.UseMiddleware<ExceptionMiddleware>();
 
         app.UseHttpsRedirection();
 
