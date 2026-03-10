@@ -1,4 +1,5 @@
 #if DEBUG
+using AppProject.Exceptions;
 using AppProject.Resources;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -19,6 +20,12 @@ namespace AppProject.Core.Controllers.General
         public IActionResult GetCultureSample()
         {
             return this.Ok(StringResource.GetStringByKey("Sample_Message_Text"));
+        }
+
+        [HttpGet]
+        public IActionResult GetException()
+        {
+            throw new AppException(ExceptionCode.Generic, "This is a simple exception for testing purposes");
         }
     }
 }
