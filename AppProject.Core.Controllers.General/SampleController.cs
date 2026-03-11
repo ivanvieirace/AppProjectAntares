@@ -1,7 +1,8 @@
 #if DEBUG
+using AppProject.Core.Models.General;
 using AppProject.Exceptions;
+using AppProject.Models;
 using AppProject.Resources;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
 namespace AppProject.Core.Controllers.General
@@ -26,6 +27,12 @@ namespace AppProject.Core.Controllers.General
         public IActionResult GetException()
         {
             throw new AppException(ExceptionCode.Generic, "This is a simple exception for testing purposes");
+        }
+
+        [HttpPost]
+        public IActionResult PostSample([FromBody] CreateOrUpdateRequest<SampleDto> request)
+        {
+            return this.Ok();
         }
     }
 }
