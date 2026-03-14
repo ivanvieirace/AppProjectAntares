@@ -19,6 +19,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Folder Include="Auth\" />
     <Folder Include="Bootstraps\" />
     <Folder Include="Middlewares\" />
   </ItemGroup>

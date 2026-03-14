@@ -1,7 +1,9 @@
 using System;
 using System.Globalization;
 using System.Reflection;
+using AppProject.Core.API.Auth;
 using AppProject.Core.API.Middlewares;
+using AppProject.Core.Contracts;
 using AppProject.Core.Services;
 using AppProject.Exceptions;
 using Microsoft.AspNetCore.Localization;
@@ -25,6 +27,8 @@ public static class Bootstrap
         });
 
         ConfigureServices(builder);
+
+        ConfigureUsers(builder);
 
         return builder;
     }
@@ -108,6 +112,11 @@ public static class Bootstrap
             .AddClasses(y => y.AssignableTo<ISingletonService>())
             .AsImplementedInterfaces()
             .WithSingletonLifetime());
+    }
+
+    private static void ConfigureUsers(WebApplicationBuilder builder)
+    {
+        builder.Services.AddScoped<IUserContext, UserContext>();
     }
 
     private static IEnumerable<Assembly> GetControllersAssemblies() =>
