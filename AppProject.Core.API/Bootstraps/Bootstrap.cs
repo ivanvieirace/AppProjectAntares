@@ -4,8 +4,10 @@ using System.Reflection;
 using AppProject.Core.API.Auth;
 using AppProject.Core.API.Middlewares;
 using AppProject.Core.Contracts;
+using AppProject.Core.Infrastructure.DB.Mapper;
 using AppProject.Core.Services;
 using AppProject.Exceptions;
+using Mapster;
 using Microsoft.AspNetCore.Localization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -29,6 +31,8 @@ public static class Bootstrap
         ConfigureServices(builder);
 
         ConfigureUsers(builder);
+
+        ConfigureMapper(builder);
 
         return builder;
     }
@@ -117,6 +121,29 @@ public static class Bootstrap
     private static void ConfigureUsers(WebApplicationBuilder builder)
     {
         builder.Services.AddScoped<IUserContext, UserContext>();
+    }
+
+    private static void ConfigureMapper(WebApplicationBuilder builder)
+    {
+        builder.Services.AddMapster();
+
+        builder.Services.Scan(scan => scan
+            .FromAssemblyOf<IRegisterMapperConfig>()
+            .AddClasses(classes => classes.AssignableTo<IRegisterMapperConfig>())
+            .As<IRegisterMapperConfig>()
+            .WithSingletonLifetime());
+
+        var provider = builder.Services.BuildServiceProvider();
+        var configs = provider.GetServices<IRegisterMapperConfig>();
+
+        var config = TypeAdapterConfig.GlobalSettings;
+
+        foreach (var mapConfig in configs)
+        {
+            mapConfig.Register(config);
+        }
+
+        builder.Services.AddSingleton(config);
     }
 
     private static IEnumerable<Assembly> GetControllersAssemblies() =>
