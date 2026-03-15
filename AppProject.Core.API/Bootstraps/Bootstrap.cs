@@ -1,15 +1,18 @@
 using System;
+using System.Formats.Tar;
 using System.Globalization;
 using System.Reflection;
 using AppProject.Core.API.Auth;
 using AppProject.Core.API.Middlewares;
 using AppProject.Core.Contracts;
+using AppProject.Core.Infrastructure.DB;
 using AppProject.Core.Infrastructure.DB.Mapper;
 using AppProject.Core.Services;
 using AppProject.Exceptions;
 using Mapster;
 using Microsoft.AspNetCore.Localization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace AppProject.Core.API.Bootstraps;
 
@@ -34,6 +37,8 @@ public static class Bootstrap
 
         ConfigureMapper(builder);
 
+        ConfigureDatabase(builder);
+
         return builder;
     }
 
@@ -53,6 +58,15 @@ public static class Bootstrap
         app.MapControllers();
 
         return app;
+    }
+
+    public static async Task InitializaDatabaseAsync(this WebApplication app)
+    {
+        using var scope = app.Services.CreateScope();
+
+        var applicationDbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+
+        await applicationDbContext.Database.MigrateAsync();
     }
 
     private static void ConfigureControllers(IMvcBuilder mvcBuilder)
@@ -146,6 +160,25 @@ public static class Bootstrap
         builder.Services.AddSingleton(config);
     }
 
+    private static void ConfigureDatabase(WebApplicationBuilder builder)
+    {
+        var connectionStringsOptions = new ConnectionStringsOptions();
+        builder.Configuration.GetSection("ConnectionStrings").Bind(connectionStringsOptions);
+
+        var databaseConnection = connectionStringsOptions.DatabaseConnection;
+
+        if (string.IsNullOrWhiteSpace(databaseConnection))
+        {
+            throw new ArgumentException("Database connection string is not configured.");
+        }
+
+        builder.Services.AddDbContext<ApplicationDbContext>(x =>
+            x.UseSqlServer(
+                databaseConnection,
+                y => y.UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery))
+                .UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking));
+    }
+
     private static IEnumerable<Assembly> GetControllersAssemblies() =>
     [
         Assembly.Load("AppProject.Core.Controllers.General"),
@@ -156,4 +189,9 @@ public static class Bootstrap
         Assembly.Load("AppProject.Core.Services"),
         Assembly.Load("AppProject.Core.Services.General")
     ];
+
+    private class ConnectionStringsOptions
+    {
+        public string? DatabaseConnection { get; set; }
+    }
 }
